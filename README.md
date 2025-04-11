@@ -1,4 +1,4 @@
-# EvalLLM
+# LLMSlurmEval
 
 This collect scripts to launch evaluations on a list of datasets and checkpoints with a slurm job array.
 
