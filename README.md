@@ -13,24 +13,30 @@ You can do the following:
 ```
 ssh leonardo
 git clone XXX
-VENV_DIR=~/llmeval/venv/
-HF_HOME=~/llmeval/hf/
+VENV_DIR=~/llmeval/venv/  # where you want to setup a virtual env
+HF_HOME=~/llmeval/hf/  # where you want to download HF datasets
 bash llm_eval/setup_node.sh $VENV_DIR $HF_HOME
 ```
 
 which
-1) creates an environment at /leonardo_work/EUHPC_E03_068/$USER/openeurollm-eval
+1) creates an environment 
 2) install dependencies
-3) download datasets in /leonardo_scratch/large/userexternal/$USER/HF_cache
+3) download datasets (as you wont have internet access in worker nodes in Slurm clusters)
  
 
 ### Launching evaluations
 
 You can now launch the experiments, first install slurmpilot and then call:
-```
+```bash
 pip install "slurmpilot[extra] @ git+https://github.com/geoalgo/slurmpilot.git"
-cd scripts/ckpt/eval_loop/
-python launch_eval.py
+python launch_eval.py \
+--model EleutherAI/pythia-160m,revision=step100000 \
+--cluster XXX \
+--partition XXX \
+--account XXX \
+--hf_home $HF_HOME \
+--venv_path $VENV_DIR  \
+--eval_output_path ~/evals/ \
 ```
 
 which will launch all evaluations.
@@ -39,10 +45,7 @@ Results will be logged in wandb but you will have to sync them as nodes are cut 
 Once results are in WANDB, you can do the following to get the table of all results (you should update the list of 
 jobids manually).
 
-```
-cd scripts/ckpt/eval_loop/
-python print_results.py
-```
+## Analysing results
 
-If you want you can also show the results for a certain group of Slurm jobs, 
-`python print_results --jobids 14140172 14141165 14147553 14170824`.
+TODO describe [evaluation-analysis.ipynb](llmeval%2Fevaluation-analysis.ipynb)
+and how to pull data.
