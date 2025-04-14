@@ -11,7 +11,7 @@ def load_tasks_from_path(path):
     n_fewshot_to_tasks = defaultdict(list)
     for line in lines:
         if not line.startswith("#"):
-            task, n_fewshot = line.split(",")
+            task, n_fewshot = line.split(";")
             n_fewshot_to_tasks[int(n_fewshot.strip())].append(task.strip())
     return n_fewshot_to_tasks
 
@@ -79,7 +79,7 @@ def main():
     hf_home = args.hf_home
     venv_path = args.venv_path
     eval_output_path = args.eval_output_path
-    jobname = "openeurollm/eval/mmlu-pro"
+    jobname = "openeurollm/eval"
 
     n_fewshot_to_tasks = load_tasks_from_path(Path(__file__).parent / "tasks.txt")
     print(f"Going to eval {dict(n_fewshot_to_tasks)}")
@@ -105,11 +105,14 @@ def main():
 
     # we set things here that depends on $USER which is known at runtime as opposed to other env vars
     bash_setup_command = f"""
+    ml Python  # cluster specific
+    ml Cuda  # cluster specific
     source {venv_path}/bin/activate
     export HF_HOME={hf_home}
     export LM_EVAL_OUTPUT_PATH={eval_output_path}
+    export CUDA_VISIBLE_DEVICES=0,1,2,3  # number of GPU specific
     """
-
+    python_args = python_args[:49]
     print(f"{len(python_args)} jobs.")
     job = JobCreationInfo(
         cluster=cluster,
@@ -118,10 +121,10 @@ def main():
         account=account,
         entrypoint="main_script.sh",
         src_dir=str(Path(__file__).parent),
-        python_binary="bash",
+        python_binary="source",
         python_args=python_args,
         bash_setup_command=bash_setup_command,
-        n_gpus=1,
+        n_gpus=4,
         n_concurrent_jobs=min(len(python_args), 32),
         max_runtime_minutes=6 * 60 - 1,
         env={

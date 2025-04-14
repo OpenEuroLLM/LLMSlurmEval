@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Script to evaluate a huggingface model or a list of models included in a path
 # Takes TASKS, NUM_FEW_SHOT and MODEL_PATH_OR_NAME as arguments.
 if [ $# -lt 3 ]; then
@@ -24,7 +26,7 @@ WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_PATH"
 
 if [ -d $MODEL_PATH_OR_NAME ]; then
   # we evaluate all models found recursively in MODEL_PATH_OR_NAME
-  echo "Evaluating all models found recursively in folder $3 with $2 few-shots on the following tasks $1."
+  echo "Evaluating all models found recursively in folder $MODEL_PATH_OR_NAME with $NUM_FEW_SHOT few-shots on the following tasks $TASKS."
   # gets all files "model.safetensors" defined in the current path and launch evaluation for each of them
   mapfile -t SAFETENSOR_FILES < <(find "$MODEL_PATH_OR_NAME" -type f -name "model.safetensors")
 
@@ -50,7 +52,7 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
         --wandb_args project=lm-eval-harness-integration,name=$WANDB_NAME
   done
 else
-  echo "Evaluate model from huggingface $MODEL_PATH"
+  echo "Evaluate model from huggingface $MODEL_PATH on $TASKS with $NUM_FEW_SHOT fewshots."
   accelerate launch -m lm_eval --model hf \
     --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
     --tasks $TASKS \
