@@ -59,6 +59,7 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
         --wandb_args project=lm-eval-harness-integration,name=$WANDB_NAME
   done
 else
+  # we evaluate the single model passed as argument
   echo "Evaluate model from huggingface $MODEL_PATH on $TASKS with $NUM_FEW_SHOT fewshots."
   # avoid having strings that are too long, we could also pick the last part of the string
   MODEL_STR=`echo $MODEL_PATH | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`

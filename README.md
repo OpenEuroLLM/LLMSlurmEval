@@ -39,6 +39,9 @@ python launch_eval.py \
 --eval_output_path ~/evals/ \
 ```
 
+You can alternatively pass `--model_file models.txt` instead of `--model`. The provided file should contain one path
+per line.
+
 which will launch all evaluations.
 
 Results will be logged in wandb but you will have to sync them as nodes are cut from internet.
