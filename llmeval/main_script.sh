@@ -25,6 +25,7 @@ export OUTLINES_CACHE_DIR=/tmp/$SLURM_JOB_ID/$SLURM_ARRAY_TASK_ID/$MODEL_PATH_OR
 mkdir -p $LM_EVAL_OUTPUT_PATH
 
 OUTPUT_PATH=$LM_EVAL_OUTPUT_PATH/$SLURM_ARRAY_JOB_ID/
+TASK_STR=${TASKS//,/_}
 
 if [ -d $MODEL_PATH_OR_NAME ]; then
   # we evaluate all models found recursively in MODEL_PATH_OR_NAME
