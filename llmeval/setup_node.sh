@@ -36,7 +36,7 @@ fi
 
 echo -e "${RED}Download datasets${NC}"
 mkdir -p $HF_HOME
-TASKS="commonsense_qa,piqa,winogrande,arc_challenge,arc_easy,mmlu,mmlu_continuation,hellaswag,copa,openbookqa,lambada_openai,winogrande,boolq,mmlu_pro"
+TASKS="commonsense_qa,piqa,winogrande,arc_challenge,arc_easy,mmlu,mmlu_continuation,hellaswag,copa,openbookqa,lambada_openai,winogrande,boolq,social_i_qa,mmlu_pro"
 
 # Run a tiny model on all datasets to make sure they are all available locally
 # A cleaner approach would to download the dataset directly
