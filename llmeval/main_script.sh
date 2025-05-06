@@ -25,7 +25,6 @@ export OUTLINES_CACHE_DIR=/tmp/$SLURM_JOB_ID/$SLURM_ARRAY_TASK_ID/$MODEL_PATH_OR
 mkdir -p $LM_EVAL_OUTPUT_PATH
 
 OUTPUT_PATH=$LM_EVAL_OUTPUT_PATH/$SLURM_ARRAY_JOB_ID/
-SYMLINK_PATH=$SYMLINK_PATH
 TASK_STR=${TASKS//,/_}
 
 if [ -d $MODEL_PATH_OR_NAME ]; then
@@ -48,15 +47,19 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
     # avoid having strings that are too long, we could also pick the last part of the string
     MODEL_STR=`echo $MODEL_PATH | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`
     WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_STR"
+    echo "Evaluate $MODEL_PATH"
 
-    # lm-eval uses long model_path to write results folder, we use a short symlink to avoid OSError36
-    MODEL_SYMLINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
-    mkdir -p "$(dirname "$MODEL_SYMLINK")"
-    ln -sfn "$MODEL_PATH" "$MODEL_SYMLINK"
+    # if SYMLINK_PATH is set, make a short link and override MODEL_PATH
+    if [ -n "${SYMLINK_PATH:-}" ]; then
+      mkdir -p "$SYMLINK_PATH"
+      LINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
+      ln -sfn "$MODEL_PATH" "$LINK"
+      MODEL_PATH="$LINK"
+      echo "Using symlink $MODEL_PATH"
+    fi
 
-    echo "Evaluate $MODEL_PATH using symlink $MODEL_SYMLINK"
     accelerate launch -m lm_eval --model hf \
-        --model_args pretrained=$MODEL_SYMLINK,trust_remote_code=True\
+        --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
         --tasks $TASKS \
         --output_path $OUTPUT_PATH \
         --batch_size $BATCH_SIZE \
@@ -66,18 +69,13 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
   done
 else
   # we evaluate the single model passed as argument
-  echo "Evaluate model from huggingface $MODEL_PATH on $TASKS with $NUM_FEW_SHOT fewshots."
+  echo "Evaluate model from huggingface $MODEL_PATH_OR_NAME on $TASKS with $NUM_FEW_SHOT fewshots."
   # avoid having strings that are too long, we could also pick the last part of the string
-  MODEL_STR=`echo $MODEL_PATH | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`
+  MODEL_STR=`echo $MODEL_PATH_OR_NAME | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`
   WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_STR"
 
-  # lm-eval uses long model_path to write results folder, we use a short symlink to avoid OSError36
-  MODEL_SYMLINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
-  mkdir -p "$(dirname "$MODEL_SYMLINK")"
-  ln -sfn "$MODEL_PATH" "$MODEL_SYMLINK"
-
   accelerate launch -m lm_eval --model hf \
-    --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
+    --model_args pretrained=$MODEL_PATH_OR_NAME,trust_remote_code=True\
     --tasks $TASKS \
     --output_path $OUTPUT_PATH \
     --batch_size $BATCH_SIZE \

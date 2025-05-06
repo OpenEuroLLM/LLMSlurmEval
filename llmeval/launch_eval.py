@@ -69,8 +69,8 @@ def main():
     parser.add_argument(
         "--symlink_path",
         type=str,
-        help="location where to store symlinks for models to evaluate",
-        required=True,
+        help="location where to store symlinks for models to be evaluated",
+        required=False,
     )
     parser.add_argument(
         "--max_jobs",
@@ -129,9 +129,10 @@ def main():
 source {venv_path}/bin/activate
 export HF_HOME={hf_home}
 export LM_EVAL_OUTPUT_PATH={eval_output_path}
-export SYMLINK_PATH={symlink_path}
 # export CUDA_VISIBLE_DEVICES=0,1,2,3  # number of GPU specific
     """
+    if symlink_path:
+      bash_setup_command += f"\nexport SYMLINK_PATH={symlink_path}"
     if args.start:
         python_args = python_args[args.start:]
     if args.max_jobs is not None:
