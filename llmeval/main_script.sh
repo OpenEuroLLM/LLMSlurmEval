@@ -26,6 +26,7 @@ mkdir -p $LM_EVAL_OUTPUT_PATH
 
 OUTPUT_PATH=$LM_EVAL_OUTPUT_PATH/$SLURM_ARRAY_JOB_ID/
 SYMLINK_PATH=$SYMLINK_PATH
+TASK_STR=${TASKS//,/_}
 
 if [ -d $MODEL_PATH_OR_NAME ]; then
   # we evaluate all models found recursively in MODEL_PATH_OR_NAME
