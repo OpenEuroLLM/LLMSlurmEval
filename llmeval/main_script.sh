@@ -25,6 +25,7 @@ export OUTLINES_CACHE_DIR=/tmp/$SLURM_JOB_ID/$SLURM_ARRAY_TASK_ID/$MODEL_PATH_OR
 mkdir -p $LM_EVAL_OUTPUT_PATH
 
 OUTPUT_PATH=$LM_EVAL_OUTPUT_PATH/$SLURM_ARRAY_JOB_ID/
+SYMLINK_PATH=$SYMLINK_PATH
 
 if [ -d $MODEL_PATH_OR_NAME ]; then
   # we evaluate all models found recursively in MODEL_PATH_OR_NAME
@@ -47,12 +48,16 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
     MODEL_STR=`echo $MODEL_PATH | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`
     WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_STR"
 
-    echo $MODEL_PATH | sed 's/foo/dummy/'
-    echo "Evaluate $MODEL_PATH"
+    # lm-eval uses long model_path to write results folder, we use a short symlink to avoid OSError36
+    MODEL_SYMLINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
+    mkdir -p "$(dirname "$MODEL_SYMLINK")"
+    ln -sfn "$MODEL_PATH" "$MODEL_SYMLINK"
+
+    echo "Evaluate $MODEL_PATH using symlink $MODEL_SYMLINK"
     accelerate launch -m lm_eval --model hf \
-        --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
+        --model_args pretrained=$MODEL_SYMLINK,trust_remote_code=True\
         --tasks $TASKS \
-        --output_path $OUTPUT_PATH/$MODEL_STR/$TASK_STR \
+        --output_path $OUTPUT_PATH \
         --batch_size $BATCH_SIZE \
         --num_fewshot $NUM_FEWSHOT \
         --trust_remote_code \
@@ -64,10 +69,16 @@ else
   # avoid having strings that are too long, we could also pick the last part of the string
   MODEL_STR=`echo $MODEL_PATH | sed 's#/leonardo_work/EUHPC_E03_068/tcarsten/converted_checkpoints/open-sci-ref_model-##'`
   WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_STR"
+
+  # lm-eval uses long model_path to write results folder, we use a short symlink to avoid OSError36
+  MODEL_SYMLINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
+  mkdir -p "$(dirname "$MODEL_SYMLINK")"
+  ln -sfn "$MODEL_PATH" "$MODEL_SYMLINK"
+
   accelerate launch -m lm_eval --model hf \
     --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
     --tasks $TASKS \
-    --output_path $OUTPUT_PATH/$MODEL_STR/$TASK_STR \
+    --output_path $OUTPUT_PATH \
     --batch_size $BATCH_SIZE \
     --num_fewshot $NUM_FEWSHOT \
     --trust_remote_code \
