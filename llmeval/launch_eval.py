@@ -67,6 +67,12 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--symlink_path",
+        type=str,
+        help="location where to store symlinks for models to be evaluated",
+        required=False,
+    )
+    parser.add_argument(
         "--max_jobs",
         type=int,
         help="maximum number of jobs to launch",
@@ -91,6 +97,7 @@ def main():
     hf_home = args.hf_home
     venv_path = args.venv_path
     eval_output_path = args.eval_output_path
+    symlink_path = args.symlink_path
     jobname = "openeurollm/eval"
 
     n_fewshot_to_tasks = load_tasks_from_path(Path(__file__).parent / "tasks.txt")
@@ -124,6 +131,8 @@ export HF_HOME={hf_home}
 export LM_EVAL_OUTPUT_PATH={eval_output_path}
 # export CUDA_VISIBLE_DEVICES=0,1,2,3  # number of GPU specific
     """
+    if symlink_path:
+      bash_setup_command += f"\nexport SYMLINK_PATH={symlink_path}"
     if args.start:
         python_args = python_args[args.start:]
     if args.max_jobs is not None:
