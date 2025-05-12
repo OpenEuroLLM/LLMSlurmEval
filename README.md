@@ -15,7 +15,7 @@ ssh leonardo
 git clone XXX
 VENV_DIR=~/llmeval/venv/  # where you want to setup a virtual env
 HF_HOME=~/llmeval/hf/  # where you want to download HF datasets
-bash llm_eval/setup_node.sh $VENV_DIR $HF_HOME
+bash llmeval/setup_node.sh $VENV_DIR $HF_HOME
 ```
 
 which
