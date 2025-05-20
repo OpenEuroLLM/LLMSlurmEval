@@ -27,7 +27,7 @@ else
   pushd $VENV_DIR
   git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
   pushd lm-evaluation-harness
-  python -m pip install -e .
+  python -m pip install -e . datasets==2.16.0
   python -m pip install accelerate
   python -m pip install wandb
   python -m pip install sentencepiece
