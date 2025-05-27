@@ -49,19 +49,10 @@ if [ -d $MODEL_PATH_OR_NAME ]; then
     WANDB_NAME="$SLURM_ARRAY_JOB_ID-$MODEL_STR"
     echo "Evaluate $MODEL_PATH"
 
-    # if SYMLINK_PATH is set, make a short link and override MODEL_PATH
-    if [ -n "${SYMLINK_PATH:-}" ]; then
-      mkdir -p "$SYMLINK_PATH"
-      LINK="$SYMLINK_PATH/$(openssl rand -hex 4)"
-      ln -sfn "$MODEL_PATH" "$LINK"
-      MODEL_PATH="$LINK"
-      echo "Using symlink $MODEL_PATH"
-    fi
-
     accelerate launch -m lm_eval --model hf \
         --model_args pretrained=$MODEL_PATH,trust_remote_code=True\
         --tasks $TASKS \
-        --output_path $OUTPUT_PATH \
+        --output_path $OUTPUT_PATH/$MODEL_STR/${TASK_STR}_${NUM_FEWSHOT}/results.json \
         --batch_size $BATCH_SIZE \
         --num_fewshot $NUM_FEWSHOT \
         --trust_remote_code \
@@ -77,7 +68,7 @@ else
   accelerate launch -m lm_eval --model hf \
     --model_args pretrained=$MODEL_PATH_OR_NAME,trust_remote_code=True\
     --tasks $TASKS \
-    --output_path $OUTPUT_PATH \
+    --output_path $OUTPUT_PATH/$MODEL_STR/${TASK_STR}_${NUM_FEWSHOT}/results.json \
     --batch_size $BATCH_SIZE \
     --num_fewshot $NUM_FEWSHOT \
     --trust_remote_code \
