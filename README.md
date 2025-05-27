@@ -36,8 +36,7 @@ python launch_eval.py \
 --account XXX \
 --hf_home $HF_HOME \
 --venv_path $VENV_DIR  \
---eval_output_path ~/evals/ \
---symlink_path ~/evals/model-symlink/
+--eval_output_path ~/evals/
 ```
 
 You can alternatively pass `--model_file models.txt` instead of `--model`. The provided file should contain one path
