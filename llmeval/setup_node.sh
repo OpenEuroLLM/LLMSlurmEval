@@ -8,6 +8,7 @@ fi
 
 export VENV_DIR=$1
 export HF_HOME=$2
+export HF_TOKEN=$3
 
 RED='\033[0;31m'
 NC='\033[0m'
