@@ -15,7 +15,8 @@ ssh leonardo
 git clone XXX
 VENV_DIR=~/llmeval/venv/  # where you want to setup a virtual env
 HF_HOME=~/llmeval/hf/  # where you want to download HF datasets
-bash llmeval/setup_node.sh $VENV_DIR $HF_HOME
+HF_TOKEN=<your huggingface API token>
+bash llmeval/setup_node.sh $VENV_DIR $HF_HOME $HF_TOKEN
 ```
 
 which
