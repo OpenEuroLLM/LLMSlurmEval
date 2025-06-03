@@ -19,20 +19,21 @@ if [ -d $VENV_DIR ]; then
   echo -e "${RED}Found existing venv at $VENV_DIR activating it.${NC}"
   source $VENV_DIR/bin/activate
 else
+  if ! command -v uv &> /dev/null; then
+    echo -e "${RED}Installing uv${NC}"
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  fi
+  
   echo -e "${RED}Creating venv${NC}"
-  python -m venv $VENV_DIR
+  uv venv $VENV_DIR --python 3.12 --managed-python
   source $VENV_DIR/bin/activate
 
   echo -e "${RED}Installing harness accelerate and dependencies${NC}"
   pushd $VENV_DIR
   git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
   pushd lm-evaluation-harness
-  python -m pip install -e . datasets==2.16.0
-  python -m pip install accelerate
-  python -m pip install wandb
-  python -m pip install sentencepiece
+  uv pip install -e . datasets==2.16.0 accelerate sentencepiece wandb
 fi
-
 
 echo -e "${RED}Download datasets${NC}"
 mkdir -p $HF_HOME
