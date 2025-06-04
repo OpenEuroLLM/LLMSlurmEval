@@ -49,7 +49,7 @@ def main(output_base_dir: str, base_evals_dir: str):
         for d in os.listdir(base_evals_dir)
         if os.path.isdir(os.path.join(base_evals_dir, d)) and d != "model-symlink"
     ]
-    for run_dir_name in potential_run_dirs:
+    for run_dir_name in potential_run_dirs[:2]:
         current_run_path = os.path.join(base_evals_dir, run_dir_name)
 
         model_result_dirs = [
@@ -66,6 +66,9 @@ def main(output_base_dir: str, base_evals_dir: str):
                     current_results_filename.startswith("results_")
                     and current_results_filename.endswith(".json")
                 ):
+                    logging.debug(
+                        f"Skipping {current_results_filename} because it doesn't start with 'results_' or end with '.json'"
+                    )
                     continue
 
                 any_results_processed_in_dir = True
@@ -78,13 +81,13 @@ def main(output_base_dir: str, base_evals_dir: str):
                         results_data = json.load(f)
 
                     if not results_data.get("results"):
-                        continue
-                    if not results_data["results"]:
+                        logging.debug(f"No results data found in {results_json_path}")
                         continue
 
                     task_name = list(results_data["results"].keys())[0]
 
                     n_shot_info_str = "unknown_shot"  # Default directory name component
+
                     n_shot_data = results_data.get("n-shot")
                     if n_shot_data is not None:
                         num_shots = n_shot_data.get(task_name)
@@ -92,9 +95,14 @@ def main(output_base_dir: str, base_evals_dir: str):
                             num_shots is not None
                         ):  # num_shots can be 0, which is a valid value
                             n_shot_info_str = f"{num_shots}-shot"
+                        elif isinstance(n_shot_data, dict):
+                            n_shot_values = list(n_shot_data.values())
+                            if all(v == n_shot_values[0] for v in n_shot_values):
+                                n_shot_info_str = f"{n_shot_values[0]}-shot"
 
                     configs_data = results_data.get("configs")
                     if not configs_data:
+                        logging.debug(f"No configs data found in {results_json_path}")
                         continue
 
                     # Try to find a config key that starts with the task_name
@@ -104,15 +112,39 @@ def main(output_base_dir: str, base_evals_dir: str):
                             task_config_data = v
                             break
                     if not task_config_data:
+                        logging.debug(
+                            f"No task config data found in {results_json_path}"
+                        )
                         continue
 
                     metadata = task_config_data.get("metadata")
                     if not metadata:
+                        logging.debug(f"No metadata found in {results_json_path}")
                         continue
 
-                    pretrained_model_symlink_path = metadata.get("pretrained")
-                    if not pretrained_model_symlink_path:
-                        continue
+                    pretrained_model_symlink_path = metadata.get("pretrained", None)
+                    if pretrained_model_symlink_path is None:
+                        logging.debug(
+                            f"No pretrained model symlink path found in {results_json_path}, "
+                            "trying to acquire symlink path from config"
+                        )
+                        model_args = results_data.get("config", {}).get("model_args")
+                        if model_args:
+                            model_args_parts = model_args.split(",")
+                            for part in model_args_parts:
+                                if part.startswith("pretrained="):
+                                    pretrained_model_symlink_path = part.split("=")[1]
+                                    logging.debug(
+                                        f"Acquired pretrained model symlink path from config: {pretrained_model_symlink_path}"
+                                    )
+                                    break
+
+                        if pretrained_model_symlink_path is None:
+                            logging.debug(
+                                f"Still no pretrained model symlink path found in {results_json_path}, "
+                                "skipping this results file"
+                            )
+                            continue
 
                     name_or_path_to_use = None
                     potential_config_path = None
@@ -181,10 +213,14 @@ def main(output_base_dir: str, base_evals_dir: str):
                             task_name,
                             n_shot_info_str,
                         )
+
                     else:
-                        sanitized_model_name = name_or_path_to_use.replace(
-                            "/", "_"
-                        ).replace("\\", "_")
+                        if os.path.isdir(name_or_path_to_use):
+                            sanitized_model_name = name_or_path_to_use.split("/")[-1]
+                        else:
+                            sanitized_model_name = name_or_path_to_use.replace(
+                                "/", "_"
+                            ).replace("\\", "_")
                         new_dir_path = os.path.join(
                             output_base_dir,
                             sanitized_model_name,
