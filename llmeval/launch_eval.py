@@ -25,6 +25,13 @@ def main():
         required=False,
     )
     parser.add_argument(
+        "--tasks_file",
+        type=str,
+        help="name of file containing tasks to evaluate (one per line).",
+        required=False,
+        default=str(Path(__file__).parent / "tasks.txt"),
+    )
+    parser.add_argument(
         "--model",
         type=str,
         help="name of a model to evaluate, incompatible with model_file.",
@@ -85,10 +92,11 @@ def main():
         required=False,
     )
 
-
     args = parser.parse_args()
 
-    assert bool(args.model_file is not None) ^ bool(args.model is not None), "Exactly one of model or model_file argument should be used."
+    assert bool(args.model_file is not None) ^ bool(args.model is not None), (
+        "Exactly one of model or model_file argument should be used."
+    )
 
     models_file = args.model_file
     cluster = args.cluster
@@ -100,7 +108,7 @@ def main():
     symlink_path = args.symlink_path
     jobname = "openeurollm/eval"
 
-    n_fewshot_to_tasks = load_tasks_from_path(Path(__file__).parent / "tasks.txt")
+    n_fewshot_to_tasks = load_tasks_from_path(Path(__file__).parent / args.tasks_file)
     print(f"Going to eval {dict(n_fewshot_to_tasks)}")
 
     if models_file:
