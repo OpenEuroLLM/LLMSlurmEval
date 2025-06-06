@@ -29,7 +29,7 @@ def main():
         type=str,
         help="name of file containing tasks to evaluate (one per line).",
         required=False,
-        default="tasks.txt",
+        default=str(Path(__file__).parent / "tasks.txt"),
     )
     parser.add_argument(
         "--model",
