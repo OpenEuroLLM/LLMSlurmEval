@@ -7,4 +7,10 @@ requires-python = ">=3.12"
 dependencies = [
     "jupyter>=1.1.1",
     "slurmpilot==0.1.5.dev0",
+    "tqdm"
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff"
 ]
