@@ -49,7 +49,7 @@ def main(output_base_dir: str, base_evals_dir: str):
         for d in os.listdir(base_evals_dir)
         if os.path.isdir(os.path.join(base_evals_dir, d)) and d != "model-symlink"
     ]
-    for run_dir_name in potential_run_dirs[:2]:
+    for run_dir_name in potential_run_dirs:
         current_run_path = os.path.join(base_evals_dir, run_dir_name)
 
         model_result_dirs = [
