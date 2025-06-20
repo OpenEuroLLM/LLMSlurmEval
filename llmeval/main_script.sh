@@ -84,4 +84,5 @@ else
     --wandb_args project=lm-eval-harness-integration,name=$WANDB_NAME
 fi
 
-python llmeval/reorganize_results.py --output-dir evals/results --evals-dir evals
+# python llmeval/reorganize_results.py --output-dir evals/results --evals-dir evals
+
