@@ -1,0 +1,36 @@
+group: oellm-core
+description: OELLM Core Tasks
+task:
+  - group: oellm-core-zero-shot
+    task: 
+      - copa
+      - openbookqa
+      - lambada_openai
+      - winogrande
+      - social_iqa
+    num_fewshot: 5
+    aggregate_metric_list:
+      - metric: acc
+  - group: oellm-core-five-shot
+    task: 
+      - mmlu
+    num_fewshot: 5
+    aggregate_metric_list:
+      - metric: acc
+    metadata:
+      version: 1.0
+  - group: oellm-core-ten-shot
+    task: 
+      - commonsense_qa
+      - piqa
+      - hellaswag
+      - arc_easy
+      - arc_challenge
+      - boolq
+    num_fewshot: 10
+    aggregate_metric_list:
+      - metric: acc
+aggregate_metric_list:
+  - metric: acc
+metadata:
+  version: 1.0
