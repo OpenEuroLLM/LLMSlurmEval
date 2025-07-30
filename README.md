@@ -2,6 +2,9 @@
 
 This collect scripts to launch evaluations on a list of datasets and checkpoints with a slurm job array.
 
+**Deprecated:** This repository has been deprecated. 
+Use https://github.com/OpenEuroLLM/multi-cluster-eval instead which has similar functionalities but provides better support for multicluster and more automated workflows.
+
 ## Setup
 
 ### Node setup
